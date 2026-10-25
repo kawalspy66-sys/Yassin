@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f7f2">
+    <title>Admin — Marketly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="catalog.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="marketly-backend.js" defer></script>
+    <script src="admin.js" defer></script>
+  </head>
+  <body class="admin-page">
+    <header class="admin-header">
+      <a class="brand" href="index.html"><span class="brand-mark">m</span> marketly<span class="brand-period">.</span></a>
+      <a class="admin-shop-link" href="index.html">← Back to shop</a>
+    </header>
+    <main class="admin-main">
+      <section class="admin-intro">
+        <div><span class="eyebrow">STORE MANAGEMENT</span><h1>Marketly admin</h1><p>Sign in to manage products and customer orders.</p></div>
+      </section>
+        <div class="admin-notice" id="admin-setup-notice" role="status">Connect your Supabase project to enable secure store management.</div>
+        <form class="admin-login" id="admin-login" hidden>
+          <h2>Admin sign in</h2><p id="login-description">Use your administrator account.</p>
+          <label id="login-username-label">Email<input name="email" type="email" autocomplete="username" required></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="primary-button" type="submit">Sign in</button>
+          <p class="admin-form-message" id="login-message" role="status"></p>
+        </form>
+        <form class="admin-login" id="admin-setup" hidden>
+          <h2>Set up your demo admin</h2>
+          <p>Choose a username and password for this browser. Keep them somewhere safe; resetting them requires clearing this browser’s saved Marketly data.</p>
+          <label>Username<input name="username" type="text" minlength="3" maxlength="60" autocomplete="username" required></label>
+          <label>Password<input name="password" type="password" minlength="10" autocomplete="new-password" required></label>
+          <label>Confirm password<input name="confirm-password" type="password" minlength="10" autocomplete="new-password" required></label>
+          <button class="primary-button" type="submit">Save admin login</button>
+          <p class="admin-form-message" id="setup-message" role="status"></p>
+        </form>
+        <button class="admin-secondary-button admin-signout" id="admin-signout" type="button" hidden>Sign out</button>
+        <div class="admin-secure-content" id="admin-secure-content" hidden>
+        <div class="admin-notice" id="store-mode-notice" role="note"></div>
+      <section class="admin-stats" aria-label="Store overview">
+        <article class="admin-stat"><span>Products</span><strong id="product-count">0</strong></article>
+        <article class="admin-stat"><span>Orders</span><strong id="order-count">0</strong></article>
+        <article class="admin-stat"><span>New orders</span><strong id="new-order-count">0</strong></article>
+      </section>
+      <section class="admin-section" aria-labelledby="product-section-title">
+        <div class="admin-section-heading"><div><span class="eyebrow">YOUR CATALOG</span><h2 id="product-section-title">Products</h2></div></div>
+        <form class="admin-product-form" id="product-form">
+          <input type="hidden" name="id">
+          <div class="admin-form-heading"><h3 id="product-form-title">Add a product</h3><p>Fields marked required need to be filled in.</p></div>
+          <div class="admin-form-grid">
+            <label>Product name<input name="name" required maxlength="100" placeholder="e.g. Handmade ceramic vase"></label>
+            <label>Maker / shop<input name="maker" required maxlength="80" placeholder="e.g. Moss & Kiln"></label>
+            <label>Category<select name="category" required>
+              <option value="Home">Home</option><option value="Flowers">Flowers</option><option value="Accessories">Accessories</option><option value="Beauty">Beauty</option><option value="Food">Food</option>
+            </select></label>
+            <label>Price (USD)<input name="price" type="number" min="0.01" step="0.01" required placeholder="25.00"></label>
+            <label>Badge <span class="admin-optional">(optional)</span><input name="badge" maxlength="40" placeholder="e.g. Bestseller"></label>
+            <label>Image URL or Unsplash photo ID<input name="image" maxlength="500" placeholder="https://… or photo-…"></label>
+          </div>
+          <div class="admin-image-upload">
+            <label for="product-image-file">Or upload a product image</label>
+            <input id="product-image-file" name="image-file" type="file" accept="image/jpeg,image/png,image/webp">
+            <p class="admin-upload-hint">JPG, PNG, or WebP. Images are resized automatically. An uploaded image replaces the image URL when both are provided.</p>
+            <div class="admin-image-preview-wrap" id="image-preview-wrap" hidden><img id="image-preview" alt="Product image preview"><span id="image-preview-name"></span></div>
+          </div>
+          <div class="admin-form-actions"><button class="primary-button" type="submit" id="save-product-button">Add product</button><button class="admin-secondary-button" type="reset" id="cancel-edit-button" hidden>Cancel edit</button><p class="admin-form-message" id="product-message" role="status"></p></div>
+        </form>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Maker</th><th>Actions</th></tr></thead>
+            <tbody id="product-table-body"></tbody>
+          </table>
+          <p class="admin-empty" id="products-empty" hidden>No products yet. Add your first product above.</p>
+        </div>
+      </section>
+      <section class="admin-section" aria-labelledby="orders-title">
+        <div class="admin-section-heading"><div><span class="eyebrow">CUSTOMER ACTIVITY</span><h2 id="orders-title">Orders</h2></div><button class="admin-secondary-button" id="refresh-orders" type="button">Refresh orders</button></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table order-table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="order-table-body"></tbody>
+          </table>
+          <p class="admin-empty" id="orders-empty">No orders yet. New customer orders will appear here.</p>
+        </div>
+      </section>
+      </div>
+    </main>
+    <div class="toast admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
